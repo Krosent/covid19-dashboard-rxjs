@@ -43,13 +43,13 @@ export function createChart() {
     })
 }
 
-export function getDatasetByCurrencyName(chart, currencyName) {
-    return chart.data.datasets.find(ds => ds.label == currencyName)
+export function getDatasetByTypeName(chart, typeName) {
+    return chart.data.datasets.find(ds => ds.label == typeName)
 }
 
-export function updateChart(chart, dataset, newPrice) {
-    chart.data.labels.push(getCurrentTime())
-    dataset.data.push(newPrice)
+export function updateChart(chart, dataset, newValue, newDate) {
+    chart.data.labels.push(newDate)
+    dataset.data.push(newValue)
     chart.data.labels = chart.data.labels.slice(-30)
     chart.data.datasets.map(dataset => dataset.data =  dataset.data.slice(-30))
     chart.update()

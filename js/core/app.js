@@ -1,4 +1,4 @@
-import { createChart, getDatasetByCurrencyName, updateChart } from './chart.js'
+import { createChart, getDatasetByTypeName, updateChart } from './chart.js'
 
 const {
     Observable,
@@ -78,6 +78,7 @@ pushMessageToWSServer(currencies)
 
 const numOfDays = 30
 let src = `https://corona.lmao.ninja/v2/historical?lastdays=${numOfDays}`
+let historicalData = "https://corona.lmao.ninja/v2/historical/all"
 
 // test 
 function subscribeCovid() {
@@ -133,15 +134,18 @@ function loadCountriesDOMUpdate(response) {
 }
 
 function loadGlobalWorldDataIntoChart() {
-    let result = rxjs.from(data).pipe(switchMap((country) => country),
-        groupBy(country => country.country),
-        mergeMap(group => group.pipe(toArray())),
-        )
+    let result = rxjs.from(downloadData(historicalData))
+    
     result.subscribe(response => loadGlobalWorldDataIntoChartDOMUpdate(response), e => console.error(e))
 }
 
 function loadGlobalWorldDataIntoChartDOMUpdate(response) {
     console.log(response)
+
+    let dataset = getDatasetByTypeName(chart, 'Cases')
+    Object.entries(response.cases).map(([date,value]) => {
+        updateChart(chart, dataset, value, date)
+    })
 }
 
 
@@ -167,13 +171,13 @@ function transformEachCountryDataToGetTotalNumbers() {
     })))
 }
 
-function downloadData() {
+function downloadData(source) {
     /* Returns Promise */
-    return fetch(src).then((response) => { return response.json() })
+    return fetch(source).then((response) => { return response.json() })
 }
 
 function entryPoint() {
-    data = downloadData()
+    data = downloadData(src)
     loadGlobalStats()
     loadCountries()
     loadGlobalWorldDataIntoChart()
