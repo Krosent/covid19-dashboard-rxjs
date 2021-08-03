@@ -9,7 +9,7 @@ export function createChart() {
             labels: [],
             datasets: [
                 {
-                  label: 'BTC',
+                  label: 'Cases',
                   data: [],
                   borderColor: 'rgba(255, 206, 86, 0.2)', 
                   backgroundColor: 'rgba(255, 206, 86, 0.2)',

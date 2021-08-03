@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lumino - Dashboard</title>
+    <title>Artemio - Dashboard</title>
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
 
@@ -18,21 +18,32 @@
     <!-- Import RxJS library -->
     <script src="https://unpkg.com/rxjs@7.1.0/dist/bundles/rxjs.umd.min.js"></script>
     <!-- Import Chart.JS -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.1"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.1"></script>
 </head>
 
 <body>
     <!-- Import business logic -->
     <script type="module" src="js/core/app.js"></script>
+    
     <div class="container m-2">
+        
         <div class="header text-center text-primary">
-            <h2> Artemio Dashboard </h2>
+            <h2 class=""> Artemio Dashboard </h2>
             <hr>
         </div>
         <div class="row">
             <div class="col-3">
-                <select id="countriesSelect" class="form-select" aria-label="Default select example">
-                    <option selected>Select Country</option>
+                <i>Select desired country:</i>
+                <select id="countriesSelect" class="form-select mt-1 mb-1" aria-label="Country selection">
+                    <option selected disabled>Select Country</option>
+                </select>
+                
+                <i>Select number of days:</i>
+                <select id="countriesSelect" class="form-select mt-1 mb-1" aria-label="Country selection">
+                    <option>10</option>
+                    <option selected>30</option>
+                    <option>60</option>
+                    <option>90</option>
                 </select>
             </div>
 
@@ -66,11 +77,27 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-12 mt-3 mb-3">
+                            <div class="card">
+                                <div class="card-body ">
+                                    <p class="">Representation Chart</p>
+                                    <select id="selectChartData" class="form-select" aria-label="Data selection">
+                                        <option disabled>Select Data Type</option>
+                                        <option selected>Cases</option>
+                                        <option>Recovered</option>
+                                        <option>Deaths</option>
+                                    </select>
+                                    <canvas class="main-chart" id="line-chart" height="200" width="600"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
             </div>
         </div>
-
     </div>
+
+    <div class="container-fluid bg-primary p-4 text-light text-center">Implemented and Designed by <a class="text-light" href="https://www.linkedin.com/in/akuznetsov-97/">Artyom Kuznetsov</a></div>
 </body>
 
 </html>
