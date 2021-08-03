@@ -21,7 +21,9 @@ const {
     mergeMap,
     reduce,
     last,
-    distinct
+    distinct,
+    concatMap,
+    toArray
 } = rxjs.operators
 
 const { webSocket } = rxjs.webSocket
@@ -66,7 +68,7 @@ function pushValueToDashboardChart(chart, price, currencyValue) {
 
 console.log("Chart initialization step")
 // TODO: Implement
-//const chart = createChart() // chart is a global variable in our application
+let chart = createChart() // chart is a global variable in our application
 
 /*console.log("Subscribe on all currencies. Default behavior")
 subscribeOnCurrencies()
@@ -74,11 +76,12 @@ console.log("Push message to the WS that we want this kind of data")
 pushMessageToWSServer(currencies)
 */
 
-let src = 'https://corona.lmao.ninja/v2/historical?lastdays=30'
+const numOfDays = 30
+let src = `https://corona.lmao.ninja/v2/historical?lastdays=${numOfDays}`
 
 // test 
 function subscribeCovid() {
-    var result = rxjs.from(fetch(src)
+    let result = rxjs.from(fetch(src)
         .then((response) => { return response.json() }))
         .pipe(
             switchMap((country) => country),
@@ -88,10 +91,8 @@ function subscribeCovid() {
     )
 }
 
-var resp = null
-
 function currenciesList() {
-    var result = rxjs.from(fetch(src).then((response) => { return response.json() }))
+    let result = rxjs.from(fetch(src).then((response) => { return response.json() }))
     result.subscribe(response => {
         // resp = response.map(country => {})
         console.log(response)
@@ -102,7 +103,7 @@ currenciesList()
 //subscribeCovid()
 
 function loadGlobalStats() {
-    var result = rxjs.from(fetch(src).then((response) => { return response.json() }))
+    let result = rxjs.from(data)
         .pipe(removeUnnecessaryData(),
             transformEachCountryDataToGetTotalNumbers(),
             calculateGlobalStats())
@@ -116,20 +117,33 @@ function loadGlobalStatsDOMUpdate(response) {
     console.log(response)
 }
 
-function loadCountries() { 
-    var result = rxjs.from(fetch(src).then((response) => { return response.json() }))
+function loadCountries() {
+    let result = rxjs.from(data)
         .pipe(removeUnnecessaryData(), map(obj => obj.map(country => country.countryName)))
     result.subscribe(response => loadCountriesDOMUpdate(new Set(response)), e => console.error(e))
 }
 
 function loadCountriesDOMUpdate(response) {
     response.forEach(countryName => {
-        var optCountry = document.createElement("option")
-        optCountry.value= countryName
+        let optCountry = document.createElement("option")
+        optCountry.value = countryName
         optCountry.innerHTML = countryName
         document.getElementById('countriesSelect').appendChild(optCountry)
-})
+    })
 }
+
+function loadGlobalWorldDataIntoChart() {
+    let result = rxjs.from(data).pipe(switchMap((country) => country),
+        groupBy(country => country.country),
+        mergeMap(group => group.pipe(toArray())),
+        )
+    result.subscribe(response => loadGlobalWorldDataIntoChartDOMUpdate(response), e => console.error(e))
+}
+
+function loadGlobalWorldDataIntoChartDOMUpdate(response) {
+    console.log(response)
+}
+
 
 function calculateGlobalStats() {
     return map(obj => {
@@ -153,10 +167,17 @@ function transformEachCountryDataToGetTotalNumbers() {
     })))
 }
 
-
-function entryPoint() {
-    loadGlobalStats()
-    loadCountries()
+function downloadData() {
+    /* Returns Promise */
+    return fetch(src).then((response) => { return response.json() })
 }
 
+function entryPoint() {
+    data = downloadData()
+    loadGlobalStats()
+    loadCountries()
+    loadGlobalWorldDataIntoChart()
+}
+
+var data
 entryPoint()
