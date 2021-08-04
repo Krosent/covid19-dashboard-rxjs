@@ -29,8 +29,6 @@ const {
 console.log("Chart initialization step")
 let chart = createChart() // chart is a global variable in our application
 
-
-
 function loadGlobalStats() {
     let result = rxjs.from(data)
         .pipe(removeUnnecessaryData(),
