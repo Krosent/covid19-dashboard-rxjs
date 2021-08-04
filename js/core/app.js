@@ -1,4 +1,4 @@
-import { createChart, getDatasetByTypeName, updateChart, updateChartVisibility, clearChart , updateLabels} from './chart.js'
+import { createChart, getDatasetByTypeName, updateChart, updateChartVisibility, clearChart, updateLabels } from './chart.js'
 
 const {
     Observable,
@@ -87,8 +87,10 @@ function loadGlobalWorldDataIntoChartDOMUpdate(response) {
 function loadCountryDataIntoChart(countryName) {
     let result = rxjs.from(downloadData(src)).pipe(
         map(obj => obj.filter(country => country.country == countryName)),
-        map(obj => obj.map(country => ({ name: country.country, deaths: country.timeline.deaths, 
-        recovered: country.timeline.recovered,  cases: country.timeline.cases }))))
+        map(obj => obj.map(country => ({
+            name: country.country, deaths: country.timeline.deaths,
+            recovered: country.timeline.recovered, cases: country.timeline.cases
+        }))))
 
     result.subscribe(response => loadCountryDataIntoChartDOMUpdate(response), e => console.error(e))
 }
@@ -99,7 +101,7 @@ function loadCountryDataIntoChartDOMUpdate(response) {
     let casesDataset = getDatasetByTypeName(chart, 'Cases')
     let recoveriesDataset = getDatasetByTypeName(chart, 'Recoveries')
     let deathsDataset = getDatasetByTypeName(chart, 'Deaths')
-    
+
     //updateLabels(Object.keys(countryData.cases))
 
     Object.entries(countryData.cases).map(([date, value]) => {
@@ -162,16 +164,17 @@ function onCountryChangeSubscription() {
     let elem = document.getElementById('countriesSelect')
     let selectCountryOptionObservable = rxjs.fromEvent(elem, 'change')
     //selectCountryOptionObservable.subscribe(() => onCountryChangeDOMUpdate(), e => console.error(e))
-    selectCountryOptionObservable.subscribe(response => onCountryChangeAction(response), e => console.error(e))
+    selectCountryOptionObservable.subscribe(() => onCountryChangeAction(), e => console.error(e))
 }
 
-function onCountryChangeAction(response) {
+function onCountryChangeAction() {
     let elem = document.getElementById('countriesSelect')
     let elemValue = elem.value
     document.getElementById('numberOfDaysSelect').disabled = false
 
     updateStatsAndCountryName(elemValue)
     loadCountryDataIntoChart(elemValue)
+    countryVaccinationStatusObservable(elem.value)
 }
 
 function onNumberOfDaysChangeSubscription() {
@@ -189,7 +192,7 @@ function onNumberOfDaysChangeAction() {
     loadCountryDataIntoChart(countriesSelectCurrentValue)
 }
 
-function filterCountry(countryName) { 
+function filterCountry(countryName) {
     return map(obj => obj.filter(country => country.countryName == countryName))
 }
 
@@ -209,8 +212,33 @@ function updateStatsBlockDOMUpdate(response) {
     console.log(response)
 }
 
-function updateSourceNumberOfDates(_src, numberOfDates) { 
+function updateSourceNumberOfDates(_src, numberOfDates) {
     src = `https://corona.lmao.ninja/v2/historical?lastdays=${numberOfDates}`
+}
+
+function countryVaccinationStatusObservable(countryName) {
+    let vaccinationData = downloadData(vaccinationAPI)
+    rxjs.from(vaccinationData).pipe(map(obj => obj.filter(current => current.country == countryName)))
+        .subscribe(response => countryVaccinationStatusDOMUpdate(response), e => console.error(e))
+}
+
+function countryVaccinationStatusDOMUpdate(response) {
+    console.log(response)
+    document.getElementById('partiallyVaccinated').innerHTML = response[0]
+        .data
+        .slice(-1)[0]
+        .people_vaccinated.toLocaleString()
+    document.getElementById('fullyVaccinated').innerHTML = response[0]
+        .data
+        .slice(-1)[0]
+        .people_fully_vaccinated
+        .toLocaleString()
+    document.getElementById('totalVacinated').innerHTML = response[0]
+        .data
+        .slice(-1)[0]
+        .total_vaccinations
+        .toLocaleString()
+    enableVaccinationDataTable()
 }
 
 function entryPoint() {
@@ -223,8 +251,13 @@ function entryPoint() {
     onNumberOfDaysChangeSubscription()
 }
 
+function enableVaccinationDataTable() {
+    document.getElementById("vaccination-table").style.display = "block";
+}
+
 var data
 var numOfDays = 30
 var src = `https://corona.lmao.ninja/v2/historical?lastdays=${numOfDays}`
 let historicalData = "https://corona.lmao.ninja/v2/historical/all"
+let vaccinationAPI = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.json'
 entryPoint()
