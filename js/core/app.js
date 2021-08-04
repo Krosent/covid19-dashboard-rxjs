@@ -1,4 +1,4 @@
-import { createChart, getDatasetByTypeName, updateChart, updateChartVisibility } from './chart.js'
+import { createChart, getDatasetByTypeName, updateChart, updateChartVisibility, clearChart , updateLabels} from './chart.js'
 
 const {
     Observable,
@@ -29,9 +29,7 @@ const {
 console.log("Chart initialization step")
 let chart = createChart() // chart is a global variable in our application
 
-const numOfDays = 30
-let src = `https://corona.lmao.ninja/v2/historical?lastdays=${numOfDays}`
-let historicalData = "https://corona.lmao.ninja/v2/historical/all"
+
 
 function loadGlobalStats() {
     let result = rxjs.from(data)
@@ -88,6 +86,38 @@ function loadGlobalWorldDataIntoChartDOMUpdate(response) {
     })
 }
 
+function loadCountryDataIntoChart(countryName) {
+    let result = rxjs.from(downloadData(src)).pipe(
+        map(obj => obj.filter(country => country.country == countryName)),
+        map(obj => obj.map(country => ({ name: country.country, deaths: country.timeline.deaths, 
+        recovered: country.timeline.recovered,  cases: country.timeline.cases }))))
+
+    result.subscribe(response => loadCountryDataIntoChartDOMUpdate(response), e => console.error(e))
+}
+
+function loadCountryDataIntoChartDOMUpdate(response) {
+    clearChart(chart)
+    const countryData = response[0]
+    let casesDataset = getDatasetByTypeName(chart, 'Cases')
+    let recoveriesDataset = getDatasetByTypeName(chart, 'Recoveries')
+    let deathsDataset = getDatasetByTypeName(chart, 'Deaths')
+    
+    //updateLabels(Object.keys(countryData.cases))
+
+    Object.entries(countryData.cases).map(([date, value]) => {
+        updateChart(chart, casesDataset, value, date)
+    })
+
+    Object.entries(countryData.recovered).map(([date, value]) => {
+        updateChart(chart, recoveriesDataset, value, date)
+    })
+
+    Object.entries(countryData.deaths).map(([date, value]) => {
+        updateChart(chart, deathsDataset, value, date)
+    })
+    console.log(countryData)
+}
+
 function calculateGlobalStats() {
     return map(obj => {
         const cases = obj.map(country => country.cases).reduce((cases1, cases2) => cases1 + cases2)
@@ -132,8 +162,7 @@ function onDataTypeChangeDOMUpdate() {
 
 function onCountryChangeSubscription() {
     let elem = document.getElementById('countriesSelect')
-    let selectCountryOptionObservable =
-        rxjs.fromEvent(elem, 'change')
+    let selectCountryOptionObservable = rxjs.fromEvent(elem, 'change')
     //selectCountryOptionObservable.subscribe(() => onCountryChangeDOMUpdate(), e => console.error(e))
     selectCountryOptionObservable.subscribe(response => onCountryChangeAction(response), e => console.error(e))
 }
@@ -141,8 +170,25 @@ function onCountryChangeSubscription() {
 function onCountryChangeAction(response) {
     let elem = document.getElementById('countriesSelect')
     let elemValue = elem.value
+    document.getElementById('numberOfDaysSelect').disabled = false
 
     updateStatsAndCountryName(elemValue)
+    loadCountryDataIntoChart(elemValue)
+}
+
+function onNumberOfDaysChangeSubscription() {
+    let elem = document.getElementById('numberOfDaysSelect')
+    let numberOfDaysOptionObservable = rxjs.fromEvent(elem, 'change')
+    numberOfDaysOptionObservable.subscribe(() => onNumberOfDaysChangeAction(), e => console.error(e))
+}
+
+function onNumberOfDaysChangeAction() {
+    let elemValue = document.getElementById('numberOfDaysSelect').value
+    updateSourceNumberOfDates(src, elemValue)
+
+    let countriesSelect = document.getElementById('countriesSelect')
+    let countriesSelectCurrentValue = countriesSelect.value
+    loadCountryDataIntoChart(countriesSelectCurrentValue)
 }
 
 function filterCountry(countryName) { 
@@ -165,7 +211,9 @@ function updateStatsBlockDOMUpdate(response) {
     console.log(response)
 }
 
-
+function updateSourceNumberOfDates(_src, numberOfDates) { 
+    src = `https://corona.lmao.ninja/v2/historical?lastdays=${numberOfDates}`
+}
 
 function entryPoint() {
     data = downloadData(src)
@@ -174,7 +222,11 @@ function entryPoint() {
     loadGlobalWorldDataIntoChart()
     onDataTypeChangeSubscription()
     onCountryChangeSubscription()
+    onNumberOfDaysChangeSubscription()
 }
 
 var data
+var numOfDays = 30
+var src = `https://corona.lmao.ninja/v2/historical?lastdays=${numOfDays}`
+let historicalData = "https://corona.lmao.ninja/v2/historical/all"
 entryPoint()
