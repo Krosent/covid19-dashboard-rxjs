@@ -1,4 +1,14 @@
-import { createChart, getDatasetByTypeName, updateChart, updateChartVisibility, clearChart, updateLabels } from './chart.js'
+/*
+    (c) Artyom Kuznetsov. SOFT LAB
+    App.js is an entry point to the JS part of the application. 
+    Code is decoupled to modules. Ideally, all code that can be moved away from app.js should be moved. 
+*/
+
+import {
+    createLineChart, createDoughnutChart, getDatasetByTypeName,
+    updateChart, updateLineChartVisibility,
+    clearChart, updateDoughnutChart, clearDoughnutChart
+} from './chart.js'
 
 const {
     Observable,
@@ -23,14 +33,20 @@ const {
     last,
     distinct,
     concatMap,
-    toArray
+    toArray,
+    merge,
+    forkJoin,
+    zip
 } = rxjs.operators
 
 console.log("Chart initialization step")
-let chart = createChart() // chart is a global variable in our application
+let chart = createLineChart() // chart is a global variable in our application
+let doughnutPie = createDoughnutChart()
+
 
 function loadGlobalStats() {
-    let result = rxjs.from(data)
+    let result = rxjs
+        .from(data)
         .pipe(removeUnnecessaryData(),
             transformEachCountryDataToGetTotalNumbers(),
             calculateGlobalStats())
@@ -45,8 +61,10 @@ function loadGlobalStatsDOMUpdate(response) {
 }
 
 function loadCountries() {
-    let result = rxjs.from(data)
-        .pipe(removeUnnecessaryData(), map(obj => obj.map(country => country.countryName)))
+    let result = rxjs
+        .from(data)
+        .pipe(removeUnnecessaryData(),
+            map(obj => obj.map(country => country.countryName)))
     result.subscribe(response => loadCountriesDOMUpdate(new Set(response)), e => console.error(e))
 }
 
@@ -102,8 +120,6 @@ function loadCountryDataIntoChartDOMUpdate(response) {
     let recoveriesDataset = getDatasetByTypeName(chart, 'Recoveries')
     let deathsDataset = getDatasetByTypeName(chart, 'Deaths')
 
-    //updateLabels(Object.keys(countryData.cases))
-
     Object.entries(countryData.cases).map(([date, value]) => {
         updateChart(chart, casesDataset, value, date)
     })
@@ -148,22 +164,19 @@ function downloadData(source) {
 
 function onDataTypeChangeSubscription() {
     let elem = document.getElementById('selectChartData')
-    let chartDataTypeOptionObservable =
-        rxjs.fromEvent(elem, 'change')
-    chartDataTypeOptionObservable
-        .subscribe(() => onDataTypeChangeDOMUpdate(), e => console.error(e))
+    let chartDataTypeOptionObservable = rxjs.fromEvent(elem, 'change')
+    chartDataTypeOptionObservable.subscribe(() => onDataTypeChangeDOMUpdate(), e => console.error(e))
 }
 
 function onDataTypeChangeDOMUpdate() {
     let selectionValue = document.getElementById('selectChartData').value
     let ds = getDatasetByTypeName(chart, selectionValue)
-    updateChartVisibility(chart, ds)
+    updateLineChartVisibility(chart, ds)
 }
 
 function onCountryChangeSubscription() {
     let elem = document.getElementById('countriesSelect')
     let selectCountryOptionObservable = rxjs.fromEvent(elem, 'change')
-    //selectCountryOptionObservable.subscribe(() => onCountryChangeDOMUpdate(), e => console.error(e))
     selectCountryOptionObservable.subscribe(() => onCountryChangeAction(), e => console.error(e))
 }
 
@@ -209,7 +222,6 @@ function updateStatsBlockDOMUpdate(response) {
     document.getElementById('totalCases').innerHTML = response[0].cases.toLocaleString()
     document.getElementById('totalRecoveries').innerHTML = response[0].recoveries.toLocaleString()
     document.getElementById('totalDeaths').innerHTML = response[0].deaths.toLocaleString()
-    console.log(response)
 }
 
 function updateSourceNumberOfDates(_src, numberOfDates) {
@@ -218,29 +230,47 @@ function updateSourceNumberOfDates(_src, numberOfDates) {
 
 function countryVaccinationStatusObservable(countryName) {
     let vaccinationData = downloadData(vaccinationAPI)
-    rxjs.from(vaccinationData).pipe(map(obj => obj.filter(current => current.country == countryName)))
+    let populationSizeData = downloadData(populationAPI)
+    let countryVaccinationDataObs = rxjs
+        .from(vaccinationData)
+        .pipe(map(obj => obj.filter(current => current.country == countryName)))
+    
+    let countryPopulationSizeObs = rxjs
+        .from(populationSizeData)
+        .pipe(map(obj => obj.filter(current => current.country == countryName)))
+
+    rxjs.forkJoin(countryPopulationSizeObs, countryVaccinationDataObs)
         .subscribe(response => countryVaccinationStatusDOMUpdate(response), e => console.error(e))
 }
 
 function countryVaccinationStatusDOMUpdate(response) {
     console.log(response)
-    document.getElementById('partiallyVaccinated').innerHTML = response[0]
+    clearDoughnutChart(doughnutPie)
+    let partiallyVaccinatedNum = response[1][0]
         .data
         .slice(-1)[0]
-        .people_vaccinated.toLocaleString()
-    document.getElementById('fullyVaccinated').innerHTML = response[0]
+        .people_vaccinated
+        
+    let fullyVaccinatedNum = response[1][0]
         .data
         .slice(-1)[0]
         .people_fully_vaccinated
-        .toLocaleString()
-    document.getElementById('totalVacinated').innerHTML = response[0]
+
+    let totalVaccinatedNumber = response[1][0]
         .data
         .slice(-1)[0]
         .total_vaccinations
-        .toLocaleString()
-    enableVaccinationDataTable()
+
+    document.getElementById('partiallyVaccinated').innerHTML = partiallyVaccinatedNum.toLocaleString()
+    document.getElementById('fullyVaccinated').innerHTML = fullyVaccinatedNum.toLocaleString()
+    document.getElementById('totalVacinated').innerHTML = totalVaccinatedNumber.toLocaleString()
+    enableVaccinationDataTableDOMUpdate()
+    updateDoughnutChart(doughnutPie, fullyVaccinatedNum)
+    updateDoughnutChart(doughnutPie, partiallyVaccinatedNum)
+    updateDoughnutChart(doughnutPie, response[0][0].population - partiallyVaccinatedNum)
 }
 
+// AKA main method
 function entryPoint() {
     data = downloadData(src)
     loadGlobalStats()
@@ -251,13 +281,18 @@ function entryPoint() {
     onNumberOfDaysChangeSubscription()
 }
 
-function enableVaccinationDataTable() {
+function enableVaccinationDataTableDOMUpdate() {
     document.getElementById("vaccination-table").style.display = "block";
 }
 
 var data
 var numOfDays = 30
 var src = `https://corona.lmao.ninja/v2/historical?lastdays=${numOfDays}`
+
+// API end point routes
 let historicalData = "https://corona.lmao.ninja/v2/historical/all"
 let vaccinationAPI = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.json'
+let populationAPI = 'https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-population.json'
+
+// Start of JS execution
 entryPoint()

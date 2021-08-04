@@ -1,5 +1,5 @@
-export function createChart() {
-    var ctx = document.getElementById('line-chart').getContext('2d')
+export function createLineChart() {
+    let ctx = document.getElementById('line-chart').getContext('2d')
     return new Chart(ctx, {
         // The type of chart we want to create
         type: 'line',
@@ -39,19 +39,40 @@ export function createChart() {
     })
 }
 
+export function createDoughnutChart() {
+  let ctx = document.getElementById('doughnut-chart').getContext('2d')
+
+  const COLORS = [
+    '#558B2F',
+    '#00ACC1',
+    '#616161',
+  ];
+
+  return new Chart(ctx, {
+      // The type of chart we want to create
+      type: 'doughnut',
+
+      // The data for our dataset
+      data: {
+          labels: ['Fully Vaccinated', 'Partially Vaccinated', 'Not Vaccinated'],
+          datasets: [
+              {
+                label: 'Vaccination Pie Chart',
+                data: [],
+                hidden: false,
+                borderColor: COLORS, 
+                backgroundColor: COLORS,
+                yAxisID: 'y',
+              }
+            ]
+      },
+      // Configuration options go here
+      options: {}
+  })
+}
+
 export function getDatasetByTypeName(chart, typeName) {
     return chart.data.datasets.find(ds => ds.label === typeName)
-}
-
-export function clearChart(chart) {
-  chart.data.labels = []
-  chart.data.datasets.map(dataset => dataset.data = [])
-  chart.update()
-}
-
-export function updateLabels(newLabels) {
-  chart.data.labels = []
-  chart.data.labels.push(newLabels)
 }
 
 export function updateChart(chart, dataset, newValue, newDate) {
@@ -61,16 +82,25 @@ export function updateChart(chart, dataset, newValue, newDate) {
     chart.update()
 }
 
-export function updateChartVisibility(chart, thisDataset) {
+export function clearChart(chart) {
+  chart.data.labels = []
+  chart.data.datasets.map(dataset => dataset.data = [])
+  chart.update()
+}
+
+export function updateDoughnutChart(chart, newValue) {
+  chart.data.datasets.map(ds => ds.data.push(newValue))
+  chart.update()
+}
+
+export function clearDoughnutChart(chart) {
+  chart.data.datasets.map(ds => ds.data = [])
+}
+
+export function updateLineChartVisibility(chart, thisDataset) {
   chart.data.datasets.filter(dataset => dataset != thisDataset).map((dataset) => {
       dataset.hidden = true
   })
   thisDataset.hidden = false
   chart.update()
-}
-
-
-function getCurrentTime() {
-    const date = new Date()
-    return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
 }

@@ -1,171 +1,146 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Lumino - Dashboard</title>
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/font-awesome.min.css" rel="stylesheet">
-	<link href="css/datepicker3.css" rel="stylesheet">
-	<link href="css/styles.css" rel="stylesheet">
-	
-	<link href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
 
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
 
-	<!-- Import RxJS library -->
-	<script src="https://unpkg.com/rxjs@7.1.0/dist/bundles/rxjs.umd.min.js"></script>
-	<!-- Import Chart.JS -->
-	<script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.1"></script>
+    <!-- Import RxJS library -->
+    <script src="https://unpkg.com/rxjs@7.1.0/dist/bundles/rxjs.umd.min.js"></script>
+    <!-- Import Chart.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.1"></script>
 </head>
+
 <body>
-	<nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
-		<div class="container-fluid">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#sidebar-collapse"><span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span></button>
-				<a class="navbar-brand" href="#"><span>Artyomino</span>Admin</a>
-				
-			</div>
-		</div><!-- /.container-fluid -->
-	</nav>
-	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
-		
-		<div class="divider"></div>
-		<form role="search">
-			<div class="form-group">
-				<input type="text" class="form-control" placeholder="Search">
-			</div>
-		</form>
-		<ul class="nav menu">
-			<li class="active"><a href="index.html"><em class="fa fa-dashboard">&nbsp;</em> Dashboard</a></li>
-			<li><a href="widgets.html"><em class="fa fa-calendar">&nbsp;</em> Widgets</a></li>
-			<li><a href="charts.html"><em class="fa fa-bar-chart">&nbsp;</em> Charts</a></li>
-			<li><a href="elements.html"><em class="fa fa-toggle-off">&nbsp;</em> UI Elements</a></li>
-		</ul>
-	</div><!--/.sidebar-->
-		
-	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
-		<div class="row">
-			<ol class="breadcrumb">
-				<li><a href="#">
-					<em class="fa fa-home"></em>
-				</a></li>
-				<li class="active">Dashboard</li>
-			</ol>
-		</div><!--/.row-->
-		
-		<div class="row">
-			<div class="col-lg-12">
-				<h1 class="page-header">Dashboard</h1>
-			</div>
-		</div><!--/.row-->
-		
-		<div class="panel panel-container">
-			<div class="row">
-				<div class="col-xs-6 col-md-3 col-lg-3 no-padding">
-					<div class="panel panel-teal panel-widget border-right">
-						<div class="row no-padding"><em class="fa fa-xl fa-shopping-cart color-blue"></em>
-							<div class="large">120</div>
-							<div id="min-val-card" class="text-muted">Minumum Value</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-6 col-md-3 col-lg-3 no-padding">
-					<div class="panel panel-blue panel-widget border-right">
-						<div class="row no-padding"><em class="fa fa-xl fa-comments color-orange"></em>
-							<div class="large">52</div>
-							<div id="average-val-card" class="text-muted">Average Value</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-6 col-md-3 col-lg-3 no-padding">
-					<div class="panel panel-orange panel-widget border-right">
-						<div class="row no-padding"><em class="fa fa-xl fa-users color-teal"></em>
-							<div class="large">24</div>
-							<div id="max-val-card" class="text-muted">Maximum Value</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-xs-6 col-md-3 col-lg-3 no-padding">
-					<div class="panel panel-red panel-widget ">
-						<div class="row no-padding"><em class="fa fa-xl fa-search color-red"></em>
-							<div class="large">25.2k</div>
-							<div id="sum-val-card" class="text-muted">Crypto Currency Sold (in $)</div>
-						</div>
-					</div>
-				</div>
-			</div><!--/.row-->
-		</div>
-		<div class="row">
-			<div class="col-md-12">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						Currencies Overview
-					</div>
-					<div class="currency-selection col-md-2" style="margin-top: 10px; ">
-						<select class="form-control">
-							<option>BTC</option>
-							<option>LTC</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-						  </select>					  
-					</div>
-					<div class="panel-body">
-						<div class="canvas-wrapper">
-							<canvas class="main-chart" id="line-chart" height="200" width="600"></canvas>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div><!--/.row-->
-		
-		<div class="row">
-			<div class="col-xs-6 col-md-3">
-				<div class="panel panel-default">
-					<div class="panel-body easypiechart-panel">
-						<h4>New Orders</h4>
-						<div class="easypiechart" id="easypiechart-blue" data-percent="92" ><span class="percent">92%</span></div>
-					</div>
-				</div>
-			</div>
-			<div class="col-xs-6 col-md-3">
-				<div class="panel panel-default">
-					<div class="panel-body easypiechart-panel">
-						<h4>Comments</h4>
-						<div class="easypiechart" id="easypiechart-orange" data-percent="65" ><span class="percent">65%</span></div>
-					</div>
-				</div>
-			</div>
-			<div class="col-xs-6 col-md-3">
-				<div class="panel panel-default">
-					<div class="panel-body easypiechart-panel">
-						<h4>New Users</h4>
-						<div class="easypiechart" id="easypiechart-teal" data-percent="56" ><span class="percent">56%</span></div>
-					</div>
-				</div>
-			</div>
-			<div class="col-xs-6 col-md-3">
-				<div class="panel panel-default">
-					<div class="panel-body easypiechart-panel">
-						<h4>Visitors</h4>
-						<div class="easypiechart" id="easypiechart-red" data-percent="27" ><span class="percent">27%</span></div>
-					</div>
-				</div>
-			</div>
-		</div><!--/.row-->
-		
-		
-	</div>	<!--/.main-->
-	
-	<script src="js/template/jquery-1.11.1.min.js"></script>
-	<script src="js/template/bootstrap.min.js"></script>
-	<script src="js/template/easypiechart.js"></script>
-	<script src="js/template/easypiechart-data.js"></script>
-	<script src="js/template/bootstrap-datepicker.js"></script>
-	<!-- Import business logic -->
-	<script type="module" src="js/core/app.js"></script>
+    <!-- Import business logic -->
+    <script type="module" src="js/core/app.js"></script>
+    
+    <div class="container m-2">
+        
+        <div class="header text-center text-primary">
+            <a href="/" style="text-decoration: none;" class="text-primary"><h2 class=""> Artemio Dashboard </h2></a>
+            <hr>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <i>Select desired country:</i>
+                <select id="countriesSelect" class="form-select mt-1 mb-1" aria-label="Country selection">
+                    <option selected disabled>Select Country</option>
+                </select>
+                
+                <i>Select number of days:</i>
+                <select id="numberOfDaysSelect" class="form-select mt-1 mb-1" aria-label="Country selection" disabled>
+                    <option selected>30</option>
+                    <option>60</option>
+                    <option>90</option>
+                </select>
+            </div>
+
+            <div class="col-9 card p-2">
+                <div class="card-body">
+                    <h4>Area: <em id="countryNameEm">Global</em></h4>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="card">
+                                <div class="card-body bg-primary">
+                                    <em class="white-text">Total Found</em>
+                                    <button id="totalCases" class="btn btn-light float-end"></button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-4">
+                            <div class="card">
+                                <div class="card-body bg-success">
+                                    <em class="white-text">Total Recovery</em>
+                                    <button id="totalRecoveries" class="btn btn-light float-end"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="card">
+                                <class class="card-body bg-danger">
+                                    <em class="white-text">Total Death</em>
+                                    <button id="totalDeaths" class="btn btn-light float-end"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3 mb-3">
+                            <div class="card">
+                                <div class="card-body ">
+                                    <p class="">Representation Chart</p>
+                                    <select id="selectChartData" class="form-select" aria-label="Data selection">
+                                        <option disabled>Select Data Type</option>
+                                        <option selected>Cases</option>
+                                        <option>Recoveries</option>
+                                        <option>Deaths</option>
+                                    </select>
+                                    <canvas class="main-chart" id="line-chart" height="200" width="600"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="vaccination-table" class="col-12 mt-3 mb-3" style="display: none;">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="">Vaccination Status</p>
+                                    <div class="row d-flex justify-content-center">
+                                    <div class="col-4">
+                                        <div class="card">
+                                            <div class="card-body bg-dark">
+                                                <em class="white-text">Partially vaccinated</em>
+                                                <button id="partiallyVaccinated" class="btn btn-success float-end"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-4">
+                                        <div class="card">
+                                            <div class="card-body bg-dark">
+                                                <em class="white-text">Fully vaccinated</em>
+                                                <button id="fullyVaccinated" class="btn btn-success float-end"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+            
+                                    <div class="col-4">
+                                        <div class="card">
+                                            <class class="card-body bg-dark">
+                                                <em class="white-text">Total vaccinated</em>
+                                                <button id="totalVacinated" class="btn btn-success float-end"></button>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6 mt-3 mb-3">
+                                            <canvas id="doughnut-chart" height="200" width="400"></canvas>
+                                        </div>
+                                    </div>
+
+                                    
+                                    
+                                    
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid bg-primary p-4 text-light text-center">&#9400; <a class="text-light" href="https://www.linkedin.com/in/akuznetsov-97/">Artyom Kuznetsov</a></div>
 </body>
+
 </html>
