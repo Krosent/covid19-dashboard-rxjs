@@ -1,4 +1,4 @@
-import { createChart, getDatasetByTypeName, updateChart } from './chart.js'
+import { createChart, getDatasetByTypeName, updateChart, updateChartVisibility } from './chart.js'
 
 const {
     Observable,
@@ -72,12 +72,21 @@ function loadGlobalWorldDataIntoChart() {
 function loadGlobalWorldDataIntoChartDOMUpdate(response) {
     console.log(response)
 
-    let dataset = getDatasetByTypeName(chart, 'Cases')
+    let casesDataset = getDatasetByTypeName(chart, 'Cases')
+    let recoveriesDataset = getDatasetByTypeName(chart, 'Recoveries')
+    let deathsDataset = getDatasetByTypeName(chart, 'Deaths')
     Object.entries(response.cases).map(([date,value]) => {
-        updateChart(chart, dataset, value, date)
+        updateChart(chart, casesDataset, value, date)
+    })
+
+    Object.entries(response.recovered).map(([date,value]) => {
+        updateChart(chart, recoveriesDataset, value, date)
+    })
+
+    Object.entries(response.deaths).map(([date,value]) => {
+        updateChart(chart, deathsDataset, value, date)
     })
 }
-
 
 function calculateGlobalStats() {
     return map(obj => {
@@ -106,11 +115,31 @@ function downloadData(source) {
     return fetch(source).then((response) => { return response.json() })
 }
 
+
+function onDataTypeChangeSubscription() {
+    let elem = document.getElementById('selectChartData')
+    let chartDataTypeOptionObservable = 
+                rxjs.fromEvent(elem, 'change')
+    chartDataTypeOptionObservable
+        .subscribe((response) => onDataTypeChangeDOMUpdate(response), e => console.error(e))
+}
+
+function onDataTypeChangeDOMUpdate(response) {
+    let selectionValue = document.getElementById('selectChartData').value
+    let ds = getDatasetByTypeName(chart, selectionValue)
+    updateChartVisibility(chart, ds)
+    // Object.entries(response.cases).map(([date,value]) => {
+    //     updateChart(chart, ds, value, date)
+    // })
+    console.log('changed')
+}
+
 function entryPoint() {
     data = downloadData(src)
     loadGlobalStats()
     loadCountries()
     loadGlobalWorldDataIntoChart()
+    onDataTypeChangeSubscription()
 }
 
 var data

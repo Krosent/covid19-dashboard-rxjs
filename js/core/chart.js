@@ -11,31 +11,27 @@ export function createChart() {
                 {
                   label: 'Cases',
                   data: [],
+                  hidden: false,
                   borderColor: 'rgba(255, 206, 86, 0.2)', 
                   backgroundColor: 'rgba(255, 206, 86, 0.2)',
                   yAxisID: 'y',
                 },
-                /*{
-                  label: 'ETH',
+                {
+                  label: 'Recoveries',
                   data: [],
-                  borderColor: 'rgba(255, 99, 132, 0.2)',
+                  hidden: true,
+                  borderColor: 'rgba(255, 99, 132, 0.2)', 
                   backgroundColor: 'rgba(255, 99, 132, 0.2)',
                   yAxisID: 'y',
                 },
                 {
-                    label: 'LTC',
-                    data: [],
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    backgroundColor: 'rgba(153, 102, 255, 1)',
-                    yAxisID: 'y',
-                  },
-                  {
-                    label: 'DOGE',
-                    data: [],
-                    borderColor: 'rgba(75, 192, 192, 0.2)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    yAxisID: 'y',
-                  } */
+                  label: 'Deaths',
+                  data: [],
+                  hidden: true,
+                  borderColor: 'rgba(153, 102, 255, 1)', 
+                  backgroundColor: 'rgba(153, 102, 255, 1)',
+                  yAxisID: 'y',
+                }
               ]
         },
         // Configuration options go here
@@ -52,8 +48,18 @@ export function updateChart(chart, dataset, newValue, newDate) {
     dataset.data.push(newValue)
     chart.data.labels = chart.data.labels.slice(-30)
     chart.data.datasets.map(dataset => dataset.data =  dataset.data.slice(-30))
+    //clearChart(chart, dataset)
     chart.update()
 }
+
+export function updateChartVisibility(chart, thisDataset) {
+  chart.data.datasets.filter(dataset => dataset != thisDataset).map((dataset) => {
+      dataset.hidden = true
+  })
+  thisDataset.hidden = false
+  chart.update()
+}
+
 
 function getCurrentTime() {
     const date = new Date()
