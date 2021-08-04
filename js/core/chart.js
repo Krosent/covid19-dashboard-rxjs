@@ -1,3 +1,8 @@
+/*
+    (c) Artyom Kuznetsov. SOFT LAB
+    Chart.js is responsible for charts rendering. This module consists of functions that used to manipulate charts.
+*/
+
 export function createLineChart() {
     let ctx = document.getElementById('line-chart').getContext('2d')
     return new Chart(ctx, {
