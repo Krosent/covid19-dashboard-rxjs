@@ -65,7 +65,7 @@ function loadCountriesDOMUpdate(response) {
 
 function loadGlobalWorldDataIntoChart() {
     let result = rxjs.from(downloadData(historicalData))
-    
+
     result.subscribe(response => loadGlobalWorldDataIntoChartDOMUpdate(response), e => console.error(e))
 }
 
@@ -75,15 +75,15 @@ function loadGlobalWorldDataIntoChartDOMUpdate(response) {
     let casesDataset = getDatasetByTypeName(chart, 'Cases')
     let recoveriesDataset = getDatasetByTypeName(chart, 'Recoveries')
     let deathsDataset = getDatasetByTypeName(chart, 'Deaths')
-    Object.entries(response.cases).map(([date,value]) => {
+    Object.entries(response.cases).map(([date, value]) => {
         updateChart(chart, casesDataset, value, date)
     })
 
-    Object.entries(response.recovered).map(([date,value]) => {
+    Object.entries(response.recovered).map(([date, value]) => {
         updateChart(chart, recoveriesDataset, value, date)
     })
 
-    Object.entries(response.deaths).map(([date,value]) => {
+    Object.entries(response.deaths).map(([date, value]) => {
         updateChart(chart, deathsDataset, value, date)
     })
 }
@@ -118,21 +118,54 @@ function downloadData(source) {
 
 function onDataTypeChangeSubscription() {
     let elem = document.getElementById('selectChartData')
-    let chartDataTypeOptionObservable = 
-                rxjs.fromEvent(elem, 'change')
+    let chartDataTypeOptionObservable =
+        rxjs.fromEvent(elem, 'change')
     chartDataTypeOptionObservable
-        .subscribe((response) => onDataTypeChangeDOMUpdate(response), e => console.error(e))
+        .subscribe(() => onDataTypeChangeDOMUpdate(), e => console.error(e))
 }
 
-function onDataTypeChangeDOMUpdate(response) {
+function onDataTypeChangeDOMUpdate() {
     let selectionValue = document.getElementById('selectChartData').value
     let ds = getDatasetByTypeName(chart, selectionValue)
     updateChartVisibility(chart, ds)
-    // Object.entries(response.cases).map(([date,value]) => {
-    //     updateChart(chart, ds, value, date)
-    // })
-    console.log('changed')
 }
+
+function onCountryChangeSubscription() {
+    let elem = document.getElementById('countriesSelect')
+    let selectCountryOptionObservable =
+        rxjs.fromEvent(elem, 'change')
+    //selectCountryOptionObservable.subscribe(() => onCountryChangeDOMUpdate(), e => console.error(e))
+    selectCountryOptionObservable.subscribe(response => onCountryChangeAction(response), e => console.error(e))
+}
+
+function onCountryChangeAction(response) {
+    let elem = document.getElementById('countriesSelect')
+    let elemValue = elem.value
+
+    updateStatsAndCountryName(elemValue)
+}
+
+function filterCountry(countryName) { 
+    return map(obj => obj.filter(country => country.countryName == countryName))
+}
+
+function updateStatsAndCountryName(countryName) {
+    let result = rxjs.from(data)
+        .pipe(removeUnnecessaryData(),
+            transformEachCountryDataToGetTotalNumbers(),
+            filterCountry(countryName))
+    result.subscribe(response => updateStatsBlockDOMUpdate(response), e => console.error(e))
+}
+
+function updateStatsBlockDOMUpdate(response) {
+    document.getElementById('countryNameEm').innerHTML = response[0].countryName
+    document.getElementById('totalCases').innerHTML = response[0].cases.toLocaleString()
+    document.getElementById('totalRecoveries').innerHTML = response[0].recoveries.toLocaleString()
+    document.getElementById('totalDeaths').innerHTML = response[0].deaths.toLocaleString()
+    console.log(response)
+}
+
+
 
 function entryPoint() {
     data = downloadData(src)
@@ -140,6 +173,7 @@ function entryPoint() {
     loadCountries()
     loadGlobalWorldDataIntoChart()
     onDataTypeChangeSubscription()
+    onCountryChangeSubscription()
 }
 
 var data
