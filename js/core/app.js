@@ -1,5 +1,5 @@
 /*
-    (c) Artyom Kuznetsov. SOFT LAB
+    (c) Artyom Kuznetsov.
     App.js is an entry point to the JS part of the application. 
     Code is decoupled to modules. Ideally, all code that can be moved away from app.js should be moved. 
 */

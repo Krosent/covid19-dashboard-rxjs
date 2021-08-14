@@ -1,5 +1,5 @@
 /*
-    (c) Artyom Kuznetsov. SOFT LAB
+    (c) Artyom Kuznetsov. 
     Chart.js is responsible for charts rendering. This module consists of functions that used to manipulate charts.
 */
 
